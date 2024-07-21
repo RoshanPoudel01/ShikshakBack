@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken";
-import Token from "../../model/tokenModel";
+import Token from "../../model/tokenModal";
 
-const JWT_SECRET = process.env.JWT_SECRET || "aadarsh";
-console.log(JWT_SECRET);
+const JWT_SECRET = process.env.JWT_SECRET || "shikshaktoken";
 
 export const createToken = async (id: number) => {
   if (JWT_SECRET) {

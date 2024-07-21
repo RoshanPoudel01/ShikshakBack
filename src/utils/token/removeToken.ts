@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import Token from "../../model/tokenModel";
+import Token from "../../model/tokenModal";
 
 export const removeExpiredTokens = async () => {
   const now = new Date();
