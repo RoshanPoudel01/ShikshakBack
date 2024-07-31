@@ -47,7 +47,8 @@ const loginUserController = async (req: Request, res: Response) => {
       formatApiResponse(null, 0, "User not found", res?.status(404));
       return;
     }
-    const token = await createToken(user.id);
+    const userRole = user.isAdmin ? "Admin" : user.isUser ? "User" : "Tutor";
+    const token = await createToken(user.id,userRole);
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       formatApiResponse(null, 0, "Invalid Password", res?.status(400));
