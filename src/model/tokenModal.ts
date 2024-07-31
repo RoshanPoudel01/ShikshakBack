@@ -20,6 +20,10 @@ const Token = connection.define("token", {
       key: "id",
     },
   },
+  refreshToken: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   expiry: {
     type: DataTypes.DATE,
     allowNull: false,

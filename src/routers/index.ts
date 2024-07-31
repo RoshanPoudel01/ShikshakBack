@@ -15,6 +15,7 @@ import {
   getSubCoursesController,
 } from "../controller/SubCourseController";
 import {
+  initAdminData,
   loginUserController,
   registerUserController,
 } from "../controller/UserController";
@@ -29,6 +30,7 @@ const router = express.Router();
 router.get("/test", testController);
 router.post("/registerUser", checkDuplicateEmail, registerUserController);
 router.post("/userLogin", loginUserController);
+router.get("/initAdmin", checkAuth, initAdminData);
 
 //course
 router.post(

@@ -21,7 +21,7 @@ const checkDuplicateEmail = async (req: Request, res: Response, next) => {
     }
     next();
   } catch (error) {
-    formatApiResponse(null, 0, error?.errors[0]?.message, res?.status(400));
+    formatApiResponse(null, 0, error?.message, res?.status(400));
   }
 };
 
@@ -33,6 +33,7 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next) => {
     }
 
     const authToken = req.headers.authorization.split(" ")[1];
+    console.log(authToken);
     const userId = jwt.decode(authToken).id;
     const user = await User.findByPk(userId);
     if (user) {
@@ -42,7 +43,7 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next) => {
       formatApiResponse(null, 0, "User not found", res?.status(404));
     }
   } catch (error) {
-    formatApiResponse(null, 0, error?.errors[0]?.message, res?.status(400));
+    formatApiResponse(null, 0, error?.message, res?.status(400));
   }
 };
 export { checkAuth, checkDuplicateEmail };

@@ -1,11 +1,13 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { formatApiResponse } from "../middleware/responseFormatter";
+import { AuthenticatedRequest } from "../middleware/verifyUser";
 import User from "../model/User";
 import { createToken } from "../utils/token/createToken";
 const registerUserController = async (req: Request, res: Response) => {
   try {
-    const { email, password, first_name, middle_name, last_name } = req.body;
+    const { email, password, first_name, middle_name, last_name, isUser } =
+      req.body;
 
     const user = await User.create({
       email,
@@ -13,6 +15,7 @@ const registerUserController = async (req: Request, res: Response) => {
       first_name,
       middle_name,
       last_name,
+      isUser,
     });
     const formattedUser = {
       id: user.id,
@@ -28,7 +31,7 @@ const registerUserController = async (req: Request, res: Response) => {
       res?.status(201)
     );
   } catch (error) {
-    formatApiResponse(null, 0, error?.errors[0]?.message, res?.status(400));
+    formatApiResponse(null, 0, error.message, res?.status(400));
   }
 };
 
@@ -40,12 +43,11 @@ const loginUserController = async (req: Request, res: Response) => {
         email,
       },
     });
-    const token = await createToken(user.id);
-
     if (!user) {
       formatApiResponse(null, 0, "User not found", res?.status(404));
       return;
     }
+    const token = await createToken(user.id);
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       formatApiResponse(null, 0, "Invalid Password", res?.status(400));
@@ -65,10 +67,38 @@ const loginUserController = async (req: Request, res: Response) => {
       1,
       "User logged in successfully",
       res?.status(200),
-      token
+      token.token,
+      token.refreshToken
     );
   } catch (error) {
-    formatApiResponse(null, 0, error?.errors[0]?.message, res?.status(400));
+    formatApiResponse(null, 0, error.message, res?.status(400));
   }
 };
-export { loginUserController, registerUserController };
+
+const initAdminData = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user;
+    const formattedUserData = {
+      email: user.email,
+      first_name: user.first_name,
+      middle_name: user.middle_name,
+      last_name: user.last_name,
+      ...(!user.isAdmin && !user.isUser
+        ? {
+            isTutor: true,
+          }
+        : {
+            isAdmin: user.isAdmin,
+          }),
+    };
+    formatApiResponse(
+      formattedUserData,
+      1,
+      "User Data Fetched Successfylly",
+      res?.status(200)
+    );
+  } catch (e) {
+    console.log(e);
+  }
+};
+export { initAdminData, loginUserController, registerUserController };
