@@ -11,10 +11,13 @@ import {
   createSubCourseController,
   deleteSubCourseController,
   editSubCourseController,
+  getAllSubCoursesController,
   getSubCourseByIdController,
   getSubCoursesController,
 } from "../controller/SubCourseController";
 import {
+  changeUserStatus,
+  getALlUsers,
   initAdminData,
   loginUserController,
   registerUserController,
@@ -31,7 +34,8 @@ router.get("/test", testController);
 router.post("/registerUser", checkDuplicateEmail, registerUserController);
 router.post("/userLogin", loginUserController);
 router.get("/initAdmin", checkAuth, initAdminData);
-
+router.get("/allUsers", checkAuth, getALlUsers);
+router.get("/toggleUserStatus/id=:id", checkAuth, changeUserStatus);
 //course
 router.post(
   "/createCourse",
@@ -45,18 +49,20 @@ router.delete("/deleteCourse/id=:id", checkAuth, deletCourseController);
 router.post(
   "/editCourse/id=:id",
   upload.single("imageUrl"),
+  checkAuth,
   editCourseController
 );
 
 //subcourse
+router.get("/getAllSubCourses", getAllSubCoursesController);
 router.post(
   "/createSubCourse",
   upload.single("imageUrl"),
   checkAuth,
   createSubCourseController
 );
-router.get("/getSubCourses", getSubCoursesController);
-router.get("/getSubCourses/id=:id", getSubCourseByIdController);
+router.get("/getSubCourses", checkAuth, getSubCoursesController);
+router.get("/getSubCourses/id=:id", checkAuth, getSubCourseByIdController);
 router.post(
   "/editSubCourse/id=:id",
   upload.single("imageUrl"),

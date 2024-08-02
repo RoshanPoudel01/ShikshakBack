@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Course from "../model/Course";
+import SubCourse from "../model/SubCourse";
 
 const createCourseController = async (
   req: AuthenticatedRequest,
@@ -12,7 +13,6 @@ const createCourseController = async (
     if (user.isAdmin) {
       const { title } = req.body;
       const image = req.file && req.file.path; // Check if image exists in the request
-
       const courseData = await Course.create({
         title,
         imageUrl: image,
@@ -42,7 +42,9 @@ const getCoursesController = async (
   res: Response
 ) => {
   try {
-    const courses = await Course.findAll();
+    const courses = await Course.findAll({
+      order: [["title", "ASC"]],
+    });
     formatApiResponse(
       courses,
       1,
@@ -79,7 +81,7 @@ const editCourseController = async (
     const user = req.user;
     if (user.isAdmin) {
       const { id } = req.params;
-      const image = req.file && req.file.originalname; // Check if image exists in the request
+      const image = req.file && req.file.path; // Check if image exists in the request
 
       const course: any = await Course.findByPk(id);
       const editCourse = await course.update({
@@ -110,6 +112,24 @@ const deletCourseController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const course = await Course.findByPk(id);
+    if (!course) {
+      formatApiResponse(null, 0, "Course not found", res?.status(404));
+      return;
+    }
+    const subCourse = await SubCourse.findOne({
+      where: {
+        courseId: id,
+      },
+    });
+    if (subCourse) {
+      formatApiResponse(
+        null,
+        0,
+        "Cannot delete course with subcourses",
+        res?.status(400)
+      );
+      return;
+    }
     await course.destroy();
     formatApiResponse(null, 1, "Course Deleted Successfully", res?.status(200));
   } catch (error) {

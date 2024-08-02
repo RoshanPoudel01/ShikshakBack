@@ -1,8 +1,9 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Course from "../model/Course";
 import SubCourse from "../model/SubCourse";
+import User from "../model/User";
 
 const createSubCourseController = async (
   req: AuthenticatedRequest,
@@ -46,10 +47,38 @@ const createSubCourseController = async (
   }
 };
 
+//get sub courses by user who created them
 const getSubCoursesController = async (
   req: AuthenticatedRequest,
   res: Response
 ) => {
+  try {
+    const user = req.user;
+    const subCourses = await SubCourse.findAll({
+      where: {
+        createdBy: user.id,
+      },
+      include: [
+        {
+          model: Course,
+          as: "course",
+          attributes: ["id", "title"],
+        },
+      ],
+    });
+    formatApiResponse(
+      subCourses,
+      1,
+      "SubCourses Fetched Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
+
+//get all sub courses
+const getAllSubCoursesController = async (req: Request, res: Response) => {
   try {
     const subCourses = await SubCourse.findAll({
       include: [
@@ -57,6 +86,10 @@ const getSubCoursesController = async (
           model: Course,
           as: "course",
           attributes: ["id", "title"],
+        },
+        {
+          model: User,
+          attributes: ["id", "first_name", "last_name"],
         },
       ],
     });
@@ -173,6 +206,7 @@ export {
   createSubCourseController,
   deleteSubCourseController,
   editSubCourseController,
+  getAllSubCoursesController,
   getSubCourseByIdController,
   getSubCoursesController,
 };

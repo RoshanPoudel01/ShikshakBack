@@ -37,6 +37,10 @@ const User = connection.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   },
   {
     hooks: {

@@ -33,7 +33,6 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next) => {
     }
 
     const authToken = req.headers.authorization.split(" ")[1];
-    console.log(authToken);
     const userId = jwt.decode(authToken).id;
     const user = await User.findByPk(userId);
     if (user) {

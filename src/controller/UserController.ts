@@ -48,7 +48,7 @@ const loginUserController = async (req: Request, res: Response) => {
       return;
     }
     const userRole = user.isAdmin ? "Admin" : user.isUser ? "User" : "Tutor";
-    const token = await createToken(user.id,userRole);
+    const token = await createToken(user.id, userRole);
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       formatApiResponse(null, 0, "Invalid Password", res?.status(400));
@@ -102,4 +102,60 @@ const initAdminData = async (req: AuthenticatedRequest, res: Response) => {
     console.log(e);
   }
 };
-export { initAdminData, loginUserController, registerUserController };
+
+const getALlUsers = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user;
+    if (!user.isAdmin) {
+      formatApiResponse(null, 0, "Unauthorized", res?.status(401));
+      return;
+    }
+    const users = await User.findAll({
+      where: {
+        isAdmin: false,
+      },
+      order: [["first_name", "ASC"]],
+    });
+    formatApiResponse(users, 1, "Users Fetched Successfully", res?.status(200));
+  } catch (e) {
+    formatApiResponse(null, 0, e.message, res?.status(400));
+  }
+};
+
+const changeUserStatus = async (req: AuthenticatedRequest, res: Response) => {
+  const reqUser = req.user;
+  if (!reqUser.isAdmin) {
+    formatApiResponse(null, 0, "Unauthorized", res?.status(401));
+    return;
+  }
+  const { id } = req.params;
+  try {
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      formatApiResponse(null, 0, "User not found", res?.status(404));
+      return;
+    }
+    if (user.isActive) {
+      user.isActive = false;
+    } else {
+      user.isActive = true;
+    }
+    await user.save();
+    formatApiResponse(
+      null,
+      1,
+      "User status changed successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error.message, res?.status(400));
+  }
+};
+export {
+  changeUserStatus,
+  getALlUsers,
+  initAdminData,
+  loginUserController,
+  registerUserController,
+};
