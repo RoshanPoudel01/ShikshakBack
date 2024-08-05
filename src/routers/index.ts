@@ -1,6 +1,14 @@
 import express from "express";
 import { testController } from "../controller";
 import {
+  createClassController,
+  deleteClassController,
+  getAllClassesController,
+  getClassByIdController,
+  getClassesByUser,
+  toggleClassStatusController,
+} from "../controller/ClassController";
+import {
   createCourseController,
   deletCourseController,
   editCourseController,
@@ -70,4 +78,12 @@ router.post(
   editSubCourseController
 );
 router.delete("/deleteSubCourse/id=:id", checkAuth, deleteSubCourseController);
+
+//class Routes
+router.post("/createClass", checkAuth, createClassController);
+router.get("/getClasses", checkAuth, getAllClassesController);
+router.get("/getMyClasses", checkAuth, getClassesByUser);
+router.get("/getClass/id=:id", checkAuth, getClassByIdController);
+router.get("/toggleClassStatus/id=:id", checkAuth, toggleClassStatusController);
+router.delete("/deleteClass/id=:id", checkAuth, deleteClassController);
 export default router;
