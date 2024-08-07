@@ -7,6 +7,7 @@ import {
   getClassByIdController,
   getClassesByUser,
   toggleClassStatusController,
+  updateClassController,
 } from "../controller/ClassController";
 import {
   createCourseController,
@@ -86,4 +87,5 @@ router.get("/getMyClasses", checkAuth, getClassesByUser);
 router.get("/getClass/id=:id", checkAuth, getClassByIdController);
 router.get("/toggleClassStatus/id=:id", checkAuth, toggleClassStatusController);
 router.delete("/deleteClass/id=:id", checkAuth, deleteClassController);
+router.post("/editClass/id=:id", checkAuth, updateClassController);
 export default router;

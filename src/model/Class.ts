@@ -55,4 +55,9 @@ const Class = connection.define("class", {
   },
 });
 
+Class.belongsTo(SubCourse, { foreignKey: "subCourseId" });
+SubCourse.hasMany(Class, { foreignKey: "subCourseId" });
+
+Class.belongsTo(User, { foreignKey: "createdBy" });
+User.hasMany(Class, { foreignKey: "createdBy" });
 export default Class;

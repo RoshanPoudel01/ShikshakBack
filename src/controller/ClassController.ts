@@ -3,6 +3,7 @@ import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Class from "../model/Class";
 import SubCourse from "../model/SubCourse";
+import User from "../model/User";
 
 // Create Class
 const createClassController = async (
@@ -68,6 +69,17 @@ const getAllClassesController = async (
   try {
     const classes = await Class.findAll({
       order: [["title", "ASC"]],
+      include: [
+        {
+          model: SubCourse,
+          as: "subcourse",
+          attributes: ["id", "title"],
+        },
+        {
+          model: User,
+          attributes: ["id", "first_name", "middle_name", "last_name"],
+        },
+      ],
     });
     formatApiResponse(
       classes,
@@ -88,7 +100,14 @@ const getClassesByUser = async (req: AuthenticatedRequest, res: Response) => {
       where: {
         createdBy: user.id,
       },
-      order: [["title", "ASC"]],
+      include: [
+        {
+          model: SubCourse,
+          as: "subcourse",
+          attributes: ["id", "title"],
+        },
+      ],
+      order: [["startTime", "ASC"]],
     });
     formatApiResponse(
       classes,
@@ -108,7 +127,15 @@ const getClassByIdController = async (
 ) => {
   try {
     const { id } = req.params;
-    const classData = await Class.findByPk(id);
+    const classData = await Class.findByPk(id, {
+      include: [
+        {
+          model: SubCourse,
+          as: "subcourse",
+          attributes: ["id", "title"],
+        },
+      ],
+    });
     formatApiResponse(
       classData,
       1,
