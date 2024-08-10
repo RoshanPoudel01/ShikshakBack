@@ -4,7 +4,7 @@ import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Class from "../model/Class";
 import SubCourse from "../model/SubCourse";
 import User from "../model/User";
-
+const { Op } = require("sequelize");
 // Create Class
 const createClassController = async (
   req: AuthenticatedRequest,
@@ -39,7 +39,22 @@ const createClassController = async (
       formatApiResponse(null, 0, "Course not found", res?.status(404));
       return;
     }
-
+    const classExists = await Class.findOne({
+      where: {
+        startTime: {
+          [Op.between]: [startTime, endTime],
+        },
+      },
+    });
+    if (classExists) {
+      formatApiResponse(
+        null,
+        0,
+        "You already have a class scheduled at this time",
+        res?.status(400)
+      );
+      return;
+    }
     const newClass = {
       title,
       description,
