@@ -2,35 +2,58 @@ import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
+import Role from "../model/Role";
 import User from "../model/User";
 import { createToken } from "../utils/token/createToken";
 const registerUserController = async (req: Request, res: Response) => {
+  const transaction = await User.sequelize.transaction();
+
   try {
     const { email, password, first_name, middle_name, last_name, isUser } =
       req.body;
 
-    const user = await User.create({
-      email,
-      password,
-      first_name,
-      middle_name,
-      last_name,
-      isUser,
-    });
-    const formattedUser = {
-      id: user.id,
-      email: user.email,
-      first_name: user.first_name,
-      middle_name: user.middle_name,
-      last_name: user.last_name,
-    };
+    // Create the user within the transaction
+    const user = await User.create(
+      {
+        email,
+        password,
+        first_name,
+        middle_name,
+        last_name,
+        isUser,
+      },
+      { transaction }
+    );
+
+    // Determine the role ID
+    let roleId;
+    if (req.body.isAdmin) {
+      roleId = 1; // Assuming '1' is the role ID for admins
+    } else if (isUser) {
+      roleId = 3; // Assuming '3' is the role ID for normal users
+    } else {
+      roleId = 2; // Assuming '2' is the role ID for other roles
+    }
+
+    // Find the role within the transaction
+    const role = await Role.findByPk(roleId, { transaction });
+    if (role) {
+      // Assign the role to the user
+      await user.addRole(role, { transaction }); // Use `addRole` for a single role
+    } else {
+      throw new Error(`Role with id ${roleId} not found`);
+    }
+    // Commit the transaction if everything is successful
+    await transaction.commit();
     formatApiResponse(
-      formattedUser,
+      null,
       1,
-      "User Created Successfully",
+      "User registered successfully",
       res?.status(201)
     );
   } catch (error) {
+    // Rollback the transaction if any error occurs
+    await transaction.rollback();
     formatApiResponse(null, 0, error.message, res?.status(400));
   }
 };

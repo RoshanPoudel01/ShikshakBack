@@ -1,20 +1,11 @@
 import { Request, Response } from "express";
 import { formatApiResponse } from "../middleware/responseFormatter";
+import Role from "../model/Role";
 
-const testController = async (req: Request, res: Response) => {
-  formatApiResponse(
-    [
-      {
-        message: "Hello World!",
-      },
-      {
-        message: "Hello World!",
-      },
-    ],
-    1,
-    null,
-    res
-  );
+const roleController = async (req: Request, res: Response) => {
+  const { name } = req.body;
+  const roleData = await Role.create({ name });
+  formatApiResponse(roleData, 1, "Role Created Successfully", res?.status(201));
 };
 
-export { testController };
+export { roleController };

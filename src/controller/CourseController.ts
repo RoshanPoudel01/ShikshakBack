@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
+import { Sequelize } from "sequelize";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Course from "../model/Course";
 import SubCourse from "../model/SubCourse";
+import User from "../model/User";
 
 const createCourseController = async (
   req: AuthenticatedRequest,
@@ -10,12 +12,15 @@ const createCourseController = async (
 ) => {
   try {
     const user = req.user;
-    if (user.isAdmin) {
-      const { title } = req.body;
+    if (!user.isAdmin && !user.isUser) {
+      const { title, description, tags } = req.body;
       const image = req.file && req.file.path; // Check if image exists in the request
       const courseData = await Course.create({
         title,
+        description,
         imageUrl: image,
+        createdBy: user.id,
+        tags,
       });
       formatApiResponse(
         courseData,
@@ -44,6 +49,25 @@ const getCoursesController = async (
   try {
     const courses = await Course.findAll({
       order: [["title", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: [
+            [
+              Sequelize.fn(
+                "CONCAT",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("middle_name"),
+                " ",
+                Sequelize.col("last_name")
+              ),
+              "full_name",
+            ],
+          ], // Include necessary user fields
+          // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+        },
+      ],
     });
     formatApiResponse(
       courses,
@@ -79,7 +103,7 @@ const editCourseController = async (
 ) => {
   try {
     const user = req.user;
-    if (user.isAdmin) {
+    if (!user.isAdmin && !user.isUser) {
       const { id } = req.params;
       const image = req.file && req.file.path; // Check if image exists in the request
 

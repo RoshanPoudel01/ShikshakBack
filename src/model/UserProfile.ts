@@ -1,22 +1,30 @@
 import { DataTypes } from "sequelize";
 import connection from "../database";
 import User from "./User";
-
-const Course = connection.define("course", {
+const UserProfile = connection.define("userprofile", {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  title: {
+  address: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  description: {
+  phoneNumber: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  createdBy: {
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: {
+        msg: "Profile Picture cannot be null",
+      },
+    },
+  },
+  userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
@@ -24,27 +32,16 @@ const Course = connection.define("course", {
       key: "id",
     },
   },
-  clicks: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    defaultValue: 0,
-  },
-  imageUrl: {
+  document: {
     type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notNull: {
-        msg: "Image URL cannot be null",
-      },
-    },
+    allowNull: true,
   },
-  tags: {
-    type: DataTypes.JSONB,
+  dateOfBirth: {
+    type: DataTypes.DATE,
     allowNull: false,
   },
 });
 
-Course.belongsTo(User, { foreignKey: "createdBy" });
-User.hasMany(Course, { foreignKey: "createdBy" });
-
-export default Course;
+UserProfile.belongsTo(User, { foreignKey: "userId" });
+User.hasOne(UserProfile, { foreignKey: "userId" });
+export default UserProfile;

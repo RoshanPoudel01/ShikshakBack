@@ -5,7 +5,7 @@ const username = process.env.DB_USER;
 const password = process.env.DB_PASS;
 
 const connection = new Sequelize({
-  database: "Shikshak",
+  database: "ShikshakDB",
   username: "sosuke",
   password: "sosuke",
   dialect: "postgres",
@@ -16,7 +16,9 @@ const connection = new Sequelize({
 try {
   connection.authenticate();
   console.log("Connection has been established successfully.");
-  connection.sync();
+  connection.sync({ alter: true }).then(() => {
+    console.log("Database & tables created!");
+  });
   console.log("All models were synchronized successfully.");
 } catch (error) {
   console.error("Unable to connect to the database:", error);

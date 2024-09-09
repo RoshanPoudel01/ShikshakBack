@@ -1,5 +1,5 @@
 import express from "express";
-import { testController } from "../controller";
+import { roleController } from "../controller";
 import {
   createClassController,
   deleteClassController,
@@ -16,14 +16,14 @@ import {
   getCourseByIdController,
   getCoursesController,
 } from "../controller/CourseController";
-import {
-  createSubCourseController,
-  deleteSubCourseController,
-  editSubCourseController,
-  getAllSubCoursesController,
-  getSubCourseByIdController,
-  getSubCoursesController,
-} from "../controller/SubCourseController";
+// import {
+//   createSubCourseController,
+//   deleteSubCourseController,
+//   editSubCourseController,
+//   getAllSubCoursesController,
+//   getSubCourseByIdController,
+//   getSubCoursesController,
+// } from "../controller/SubCourseController";
 import {
   changeUserStatus,
   getALlUsers,
@@ -39,7 +39,7 @@ const router = express.Router();
 // router.post("/", upload.single('name'),(req, res) => {
 //   res.send("Hello World!");
 // });
-router.get("/test", testController);
+router.post("/role", roleController);
 router.post("/registerUser", checkDuplicateEmail, registerUserController);
 router.post("/userLogin", loginUserController);
 router.get("/initAdmin", checkAuth, initAdminData);
@@ -63,22 +63,22 @@ router.post(
 );
 
 //subcourse
-router.get("/getAllSubCourses", getAllSubCoursesController);
-router.post(
-  "/createSubCourse",
-  upload.single("imageUrl"),
-  checkAuth,
-  createSubCourseController
-);
-router.get("/getSubCourses", checkAuth, getSubCoursesController);
-router.get("/getSubCourses/id=:id", checkAuth, getSubCourseByIdController);
-router.post(
-  "/editSubCourse/id=:id",
-  upload.single("imageUrl"),
-  checkAuth,
-  editSubCourseController
-);
-router.delete("/deleteSubCourse/id=:id", checkAuth, deleteSubCourseController);
+// router.get("/getAllSubCourses", getAllSubCoursesController);
+// router.post(
+//   "/createSubCourse",
+//   upload.single("imageUrl"),
+//   checkAuth,
+//   createSubCourseController
+// );
+// router.get("/getSubCourses", checkAuth, getSubCoursesController);
+// router.get("/getSubCourses/id=:id", checkAuth, getSubCourseByIdController);
+// router.post(
+//   "/editSubCourse/id=:id",
+//   upload.single("imageUrl"),
+//   checkAuth,
+//   editSubCourseController
+// );
+// router.delete("/deleteSubCourse/id=:id", checkAuth, deleteSubCourseController);
 
 //class Routes
 router.post("/createClass", checkAuth, createClassController);
@@ -88,4 +88,5 @@ router.get("/getClass/id=:id", checkAuth, getClassByIdController);
 router.get("/toggleClassStatus/id=:id", checkAuth, toggleClassStatusController);
 router.delete("/deleteClass/id=:id", checkAuth, deleteClassController);
 router.post("/editClass/id=:id", checkAuth, updateClassController);
+
 export default router;

@@ -12,5 +12,4 @@ const Role = connection.define("roles", {
     allowNull: false,
   },
 });
-
 export default Role;
