@@ -2,8 +2,10 @@ import { Response } from "express";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Class from "../model/Class";
+import Course from "../model/Course";
 import SubCourse from "../model/SubCourse";
 import User from "../model/User";
+import UserProfile from "../model/UserProfile";
 const { Op } = require("sequelize");
 // Create Class
 const createClassController = async (
@@ -12,19 +14,19 @@ const createClassController = async (
 ) => {
   try {
     const user = req.user;
-
+    const roles = req.roles;
     //check if user is tutor
-    if (user.isUser || user.isAdmin) {
+    if (!roles?.includes("Tutor")) {
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;
     }
-    const { title, description, subCourseId, startTime, endTime } = req.body;
+    const { title, description, courseId, startTime, endTime } = req.body;
     // validate inputs
     if (!title) {
       formatApiResponse(null, 0, "Title is required", res?.status(400));
       return;
     }
-    if (!subCourseId) {
+    if (!courseId) {
       formatApiResponse(null, 0, "Course is required", res?.status(400));
       return;
     }
@@ -33,9 +35,9 @@ const createClassController = async (
       return;
     }
     //check if subcourse exists
-    const subCourse = await SubCourse.findByPk(subCourseId);
+    const course = await Course.findByPk(courseId);
 
-    if (!subCourse) {
+    if (!course) {
       formatApiResponse(null, 0, "Course not found", res?.status(404));
       return;
     }
@@ -58,7 +60,7 @@ const createClassController = async (
     const newClass = {
       title,
       description,
-      subCourseId,
+      courseId,
       startTime,
       endTime,
       createdBy: user.id,
@@ -82,22 +84,44 @@ const getAllClassesController = async (
   res: Response
 ) => {
   try {
+    const roles = req.roles;
+
+    const isStudent = roles?.includes("Student");
     const classes = await Class.findAll({
       order: [["title", "ASC"]],
       include: [
         {
-          model: SubCourse,
-          as: "subcourse",
+          model: Course,
+          as: "course",
           attributes: ["id", "title"],
         },
         {
           model: User,
           attributes: ["id", "first_name", "middle_name", "last_name"],
+          include: [
+            {
+              model: UserProfile,
+              as: "userprofile",
+              attributes: ["profilePicture", "phoneNumber"], // Adjust attributes as needed
+            },
+          ],
         },
       ],
     });
+    const classDataForStudents = classes.map((classData: any) => {
+      const formattedClass = {
+        id: classData.id,
+        title: classData.title,
+        description: classData.description,
+        startTime: classData.startTime,
+        endTime: classData.endTime,
+        course: classData.course,
+        tutor: classData.user,
+      };
+      return formattedClass;
+    });
     formatApiResponse(
-      classes,
+      isStudent ? classDataForStudents : classes,
       1,
       "Classes Fetched Successfully",
       res?.status(200)
@@ -117,8 +141,8 @@ const getClassesByUser = async (req: AuthenticatedRequest, res: Response) => {
       },
       include: [
         {
-          model: SubCourse,
-          as: "subcourse",
+          model: Course,
+          as: "course",
           attributes: ["id", "title"],
         },
       ],
@@ -235,7 +259,7 @@ const toggleClassStatusController = async (
     }
     const { id } = req.params;
     const classData: any = await Class.findByPk(id);
-    console.log(classData?.createdBy, user.id);
+    // console.log(classData?.createdBy, user.id);
     if (classData?.createdBy !== user.id) {
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;

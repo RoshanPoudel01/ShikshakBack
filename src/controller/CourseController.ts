@@ -96,6 +96,49 @@ const getCourseByIdController = async (req: Request, res: Response) => {
   }
 };
 
+//get course by user
+const getCourseByUserController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const user = req.user;
+    const courses = await Course.findAll({
+      where: {
+        createdBy: user.id,
+      },
+      order: [["title", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: [
+            [
+              Sequelize.fn(
+                "CONCAT",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("middle_name"),
+                " ",
+                Sequelize.col("last_name")
+              ),
+              "full_name",
+            ],
+          ], // Include necessary user fields
+          // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+        },
+      ],
+    });
+    formatApiResponse(
+      courses,
+      1,
+      "Courses Fetched Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
+
 //edit course
 const editCourseController = async (
   req: AuthenticatedRequest,
@@ -165,5 +208,6 @@ export {
   deletCourseController,
   editCourseController,
   getCourseByIdController,
+  getCourseByUserController,
   getCoursesController,
 };

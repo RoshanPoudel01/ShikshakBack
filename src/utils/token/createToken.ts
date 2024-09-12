@@ -3,12 +3,12 @@ import Token from "../../model/tokenModal";
 const JWT_SECRET = process.env.JWT_SECRET || "shikshaktoken";
 const REFRESH_TOKEN_PRIVATE_KEY =
   process.env.REFRESH_TOKEN_PRIVATE || "shikshaktoken";
-export const createToken = async (id: number, role: string) => {
+export const createToken = async (id: number, roles: string[]) => {
   if (JWT_SECRET) {
     const token = jwt.sign(
       {
         id,
-        role,
+        roles,
       },
       JWT_SECRET,
       { expiresIn: "1d" }

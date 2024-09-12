@@ -1,6 +1,10 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import Role from "./model/Role";
+import User from "./model/User";
+import UserProfile from "./model/UserProfile";
+import UserRole from "./model/UserRole";
 import router from "./routers";
 dotenv.config();
 
@@ -13,6 +17,11 @@ app.use(cors());
 app.use("/uploads", express.static("uploads"));
 app.use("/api", router);
 
+User.belongsToMany(Role, { through: UserRole });
+Role.belongsToMany(User, { through: UserRole });
+
+UserProfile.belongsTo(User, { foreignKey: "userId" });
+User.hasOne(UserProfile, { foreignKey: "userId" });
 app.listen(port, () => {
   return console.log(
     `Express server is listening at http://localhost:${port} 🚀`

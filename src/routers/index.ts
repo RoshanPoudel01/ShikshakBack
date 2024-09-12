@@ -14,6 +14,7 @@ import {
   deletCourseController,
   editCourseController,
   getCourseByIdController,
+  getCourseByUserController,
   getCoursesController,
 } from "../controller/CourseController";
 // import {
@@ -30,6 +31,7 @@ import {
   initAdminData,
   loginUserController,
   registerUserController,
+  saveUserProfile,
 } from "../controller/UserController";
 import { checkAuth, checkDuplicateEmail } from "../middleware/verifyUser";
 import { upload } from "../utils/multer";
@@ -61,6 +63,7 @@ router.post(
   checkAuth,
   editCourseController
 );
+router.get("/getMyCourses", checkAuth, getCourseByUserController);
 
 //subcourse
 // router.get("/getAllSubCourses", getAllSubCoursesController);
@@ -89,4 +92,14 @@ router.get("/toggleClassStatus/id=:id", checkAuth, toggleClassStatusController);
 router.delete("/deleteClass/id=:id", checkAuth, deleteClassController);
 router.post("/editClass/id=:id", checkAuth, updateClassController);
 
+// UserProfile Routes
+router.post(
+  "/createUserProfile",
+  checkAuth,
+  upload.fields([
+    { name: "document", maxCount: 1 },
+    { name: "profilePicture", maxCount: 1 },
+  ]),
+  saveUserProfile
+);
 export default router;

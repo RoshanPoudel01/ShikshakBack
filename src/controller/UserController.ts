@@ -4,13 +4,27 @@ import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Role from "../model/Role";
 import User from "../model/User";
+import UserProfile from "../model/UserProfile";
 import { createToken } from "../utils/token/createToken";
 const registerUserController = async (req: Request, res: Response) => {
   const transaction = await User.sequelize.transaction();
 
   try {
-    const { email, password, first_name, middle_name, last_name, isUser } =
-      req.body;
+    const {
+      email,
+      password,
+      first_name,
+      middle_name,
+      last_name,
+      isUser,
+      isAdmin,
+    } = req.body;
+
+    const userExists = await User.findOne({
+      where: {
+        email,
+      },
+    });
 
     // Create the user within the transaction
     const user = await User.create(
@@ -21,18 +35,19 @@ const registerUserController = async (req: Request, res: Response) => {
         middle_name,
         last_name,
         isUser,
+        isAdmin,
       },
       { transaction }
     );
 
     // Determine the role ID
     let roleId;
-    if (req.body.isAdmin) {
-      roleId = 1; // Assuming '1' is the role ID for admins
+    if (isAdmin) {
+      roleId = 1; //  '1' is the role ID for Admin
     } else if (isUser) {
-      roleId = 3; // Assuming '3' is the role ID for normal users
+      roleId = 3; //  '3' is the role ID for Students
     } else {
-      roleId = 2; // Assuming '2' is the role ID for other roles
+      roleId = 2; //  '2' is the role ID for Tutors
     }
 
     // Find the role within the transaction
@@ -60,27 +75,34 @@ const registerUserController = async (req: Request, res: Response) => {
 
 const loginUserController = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, isUser } = req.body;
     const user = await User.findOne({
       where: {
         email,
+        isUser,
       },
     });
     if (!user) {
-      formatApiResponse(null, 0, "User not found", res?.status(404));
+      formatApiResponse(
+        null,
+        0,
+        "User with the email not found",
+        res?.status(404)
+      );
       return;
     }
     if (!user.isActive) {
       formatApiResponse(
         null,
         0,
-        "Cannot login with this user. Please contact the owner.",
+        "Cannot login with this user. Please contact admin.",
         res?.status(404)
       );
       return;
     }
+    const userRoles = await user.getRoles();
 
-    const userRole = user.isAdmin ? "Admin" : user.isUser ? "User" : "Tutor";
+    const userRole = userRoles?.map((role) => role.name);
     const token = await createToken(user.id, userRole);
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -139,6 +161,7 @@ const initAdminData = async (req: AuthenticatedRequest, res: Response) => {
 const getALlUsers = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user;
+
     if (!user.isAdmin) {
       formatApiResponse(null, 0, "Unauthorized", res?.status(401));
       return;
@@ -185,10 +208,64 @@ const changeUserStatus = async (req: AuthenticatedRequest, res: Response) => {
     formatApiResponse(null, 0, error.message, res?.status(400));
   }
 };
+
+//add user profile
+
+const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user;
+    const roles = req.roles;
+    const isTutor = roles.includes("Tutor");
+    const { address, phoneNumber, dateOfBirth } = req.body;
+    const profilePicture =
+      req.files &&
+      req.files["profilePicture"] &&
+      req.files["profilePicture"][0].path;
+
+    if (profilePicture) {
+      const document =
+        req.files && req.files["document"] && req.files["document"][0].path;
+      if (isTutor && !document) {
+        formatApiResponse(
+          null,
+          0,
+          "Please add a document to verify",
+          res?.status(400)
+        );
+        return;
+      }
+      const userProfile = await UserProfile.create({
+        address,
+        phoneNumber,
+        profilePicture,
+        document,
+        dateOfBirth,
+        userId: user.id,
+      });
+      formatApiResponse(
+        userProfile,
+        1,
+        "User Profile Created Successfully",
+        res?.status(201)
+      );
+    } else {
+      formatApiResponse(
+        null,
+        0,
+        "Please add a profile picture",
+        res?.status(400)
+      );
+      return;
+    }
+  } catch (error) {
+    formatApiResponse(null, 0, error.message, res?.status(400));
+  }
+};
 export {
   changeUserStatus,
   getALlUsers,
   initAdminData,
   loginUserController,
   registerUserController,
+  saveUserProfile,
 };

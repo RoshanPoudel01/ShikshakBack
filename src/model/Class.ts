@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import connection from "../database";
-import SubCourse from "./SubCourse";
+import Course from "./Course";
 import User from "./User";
 
 const Class = connection.define("class", {
@@ -17,11 +17,11 @@ const Class = connection.define("class", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  subCourseId: {
+  courseId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: SubCourse,
+      model: Course,
       key: "id",
     },
   },
@@ -55,8 +55,8 @@ const Class = connection.define("class", {
   },
 });
 
-Class.belongsTo(SubCourse, { foreignKey: "subCourseId" });
-SubCourse.hasMany(Class, { foreignKey: "subCourseId" });
+Class.belongsTo(Course, { foreignKey: "courseId" });
+Course.hasMany(Class, { foreignKey: "courseId" });
 
 Class.belongsTo(User, { foreignKey: "createdBy" });
 User.hasMany(Class, { foreignKey: "createdBy" });

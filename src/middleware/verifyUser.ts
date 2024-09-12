@@ -4,6 +4,7 @@ import User from "../model/User";
 import { formatApiResponse } from "./responseFormatter";
 
 export interface AuthenticatedRequest extends Request {
+  roles?: string[];
   user?: any | null;
 }
 const checkDuplicateEmail = async (req: Request, res: Response, next) => {
@@ -35,8 +36,10 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next) => {
     const authToken = req.headers.authorization.split(" ")[1];
     const userId = jwt.decode(authToken).id;
     const user = await User.findByPk(userId);
+    const userRoles = await user.getRoles();
     if (user) {
       req.user = user.toJSON();
+      req.roles = userRoles?.map((role) => role.name);
       next();
     } else {
       formatApiResponse(null, 0, "User not found", res?.status(404));
