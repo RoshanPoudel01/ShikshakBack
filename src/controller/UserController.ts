@@ -171,6 +171,18 @@ const getALlUsers = async (req: AuthenticatedRequest, res: Response) => {
         isAdmin: false,
       },
       order: [["first_name", "ASC"]],
+      include: [
+        {
+          model: UserProfile,
+          attributes: [
+            "address",
+            "phoneNumber",
+            "profilePicture",
+            "document",
+            "dateOfBirth",
+          ],
+        },
+      ],
     });
     formatApiResponse(users, 1, "Users Fetched Successfully", res?.status(200));
   } catch (e) {

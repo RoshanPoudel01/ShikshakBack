@@ -15,6 +15,7 @@ const createCourseController = async (
     if (!user.isAdmin && !user.isUser) {
       const { title, description, tags } = req.body;
       const image = req.file && req.file.path; // Check if image exists in the request
+
       const courseData = await Course.create({
         title,
         description,
