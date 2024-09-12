@@ -207,13 +207,13 @@ const updateClassController = async (
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;
     }
-    const { title, description, subCourseId, startTime, endTime } = req.body;
+    const { title, description, courseId, startTime, endTime } = req.body;
     // validate inputs
     if (!title) {
       formatApiResponse(null, 0, "Title is required", res?.status(400));
       return;
     }
-    if (!subCourseId) {
+    if (!courseId) {
       formatApiResponse(null, 0, "Course is required", res?.status(400));
       return;
     }
@@ -221,17 +221,17 @@ const updateClassController = async (
       formatApiResponse(null, 0, "Start time is required", res?.status(400));
       return;
     }
-    //check if subcourse exists
-    const subCourse = await SubCourse.findByPk(subCourseId);
+    //check if course exists
+    const course = await Course.findByPk(courseId);
 
-    if (!subCourse) {
+    if (!course) {
       formatApiResponse(null, 0, "Course not found", res?.status(404));
       return;
     }
     await classData.update({
       title,
       description,
-      subCourseId,
+      courseId,
       startTime,
       endTime,
     });
