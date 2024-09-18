@@ -3,7 +3,6 @@ import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Class from "../model/Class";
 import Course from "../model/Course";
-import SubCourse from "../model/SubCourse";
 import User from "../model/User";
 import UserProfile from "../model/UserProfile";
 const { Op } = require("sequelize");
@@ -93,7 +92,7 @@ const getAllClassesController = async (
         {
           model: Course,
           as: "course",
-          attributes: ["id", "title"],
+          attributes: ["id", "title", "imageUrl"],
         },
         {
           model: User,
@@ -169,8 +168,8 @@ const getClassByIdController = async (
     const classData = await Class.findByPk(id, {
       include: [
         {
-          model: SubCourse,
-          as: "subcourse",
+          model: Course,
+          as: "course",
           attributes: ["id", "title"],
         },
       ],
@@ -259,7 +258,6 @@ const toggleClassStatusController = async (
     }
     const { id } = req.params;
     const classData: any = await Class.findByPk(id);
-    // console.log(classData?.createdBy, user.id);
     if (classData?.createdBy !== user.id) {
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;
@@ -292,7 +290,6 @@ const deleteClassController = async (
   res: Response
 ) => {
   try {
-    console.log("first");
     const user = req.user;
     if (user.isUser || user.isAdmin) {
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
@@ -315,12 +312,60 @@ const deleteClassController = async (
   }
 };
 
+const joinClassController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const user = req.user;
+    const roles = req.roles;
+    const isStudent = roles?.includes("Student");
+    const { id } = req.params;
+    const classData: any = await Class.findByPk(id);
+    if (!isStudent) {
+      formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
+      return;
+    }
+    if (!classData) {
+      formatApiResponse(null, 0, "Class not found", res?.status(404));
+      return;
+    }
+    const enrolledUser = await Class.findOne({
+      where: {
+        joinedUser: user.id,
+        id: id,
+      },
+    });
+    console.log(enrolledUser);
+    if (enrolledUser) {
+      formatApiResponse(
+        null,
+        0,
+        "You have already joined this class",
+        res?.status(400)
+      );
+      return;
+    }
+    await classData.update({
+      joinedUser: user.id,
+    });
+    formatApiResponse(
+      null,
+      1,
+      "You have joined the class successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
 export {
   createClassController,
   deleteClassController,
   getAllClassesController,
   getClassByIdController,
   getClassesByUser,
+  joinClassController,
   toggleClassStatusController,
   updateClassController,
 };

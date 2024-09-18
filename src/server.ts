@@ -22,6 +22,7 @@ Role.belongsToMany(User, { through: UserRole });
 
 UserProfile.belongsTo(User, { foreignKey: "userId" });
 User.hasOne(UserProfile, { foreignKey: "userId" });
+
 app.listen(port, () => {
   return console.log(
     `Express server is listening at http://localhost:${port} 🚀`

@@ -6,6 +6,7 @@ import {
   getAllClassesController,
   getClassByIdController,
   getClassesByUser,
+  joinClassController,
   toggleClassStatusController,
   updateClassController,
 } from "../controller/ClassController";
@@ -28,6 +29,7 @@ import {
 import {
   changeUserStatus,
   getALlUsers,
+  getUserByIdController,
   initAdminData,
   loginUserController,
   registerUserController,
@@ -47,6 +49,7 @@ router.post("/userLogin", loginUserController);
 router.get("/initAdmin", checkAuth, initAdminData);
 router.get("/allUsers", checkAuth, getALlUsers);
 router.get("/toggleUserStatus/id=:id", checkAuth, changeUserStatus);
+router.get("/getUserById/id=:id", checkAuth, getUserByIdController);
 //course
 router.post(
   "/createCourse",
@@ -54,7 +57,7 @@ router.post(
   upload.single("imageUrl"),
   createCourseController
 );
-router.get("/getCourses", checkAuth, getCoursesController);
+router.get("/getCourses", getCoursesController);
 router.get("/getCourse/id=:id", getCourseByIdController);
 router.delete("/deleteCourse/id=:id", checkAuth, deletCourseController);
 router.post(
@@ -91,6 +94,7 @@ router.get("/getClass/id=:id", checkAuth, getClassByIdController);
 router.get("/toggleClassStatus/id=:id", checkAuth, toggleClassStatusController);
 router.delete("/deleteClass/id=:id", checkAuth, deleteClassController);
 router.post("/editClass/id=:id", checkAuth, updateClassController);
+router.get("/joinClass/id=:id", checkAuth, joinClassController);
 
 // UserProfile Routes
 router.post(

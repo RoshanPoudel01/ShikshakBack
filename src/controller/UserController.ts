@@ -134,11 +134,18 @@ const loginUserController = async (req: Request, res: Response) => {
 const initAdminData = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user;
+    const isProfileCreated = await UserProfile.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
     const formattedUserData = {
       email: user.email,
       first_name: user.first_name,
       middle_name: user.middle_name,
       last_name: user.last_name,
+      profileCreated: isProfileCreated ? true : false,
       ...(!user.isAdmin && !user.isUser
         ? {
             isTutor: true,
@@ -154,7 +161,7 @@ const initAdminData = async (req: AuthenticatedRequest, res: Response) => {
       res?.status(200)
     );
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 };
 
@@ -273,9 +280,59 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     formatApiResponse(null, 0, error.message, res?.status(400));
   }
 };
+
+const getUserByIdController = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    const roles = req.roles;
+    const isTutor = roles.includes("Tutor");
+    if (!isTutor) {
+      formatApiResponse(null, 0, "Unauthorized", res?.status(401));
+      return;
+    }
+    const { id } = req.params;
+    const user = await User.findByPk(id, {
+      include: [
+        {
+          model: UserProfile,
+          attributes: [
+            "address",
+            "phoneNumber",
+            "profilePicture",
+            "document",
+            "dateOfBirth",
+          ],
+        },
+      ],
+    });
+    if (!user) {
+      formatApiResponse(null, 0, "User not found", res?.status(404));
+      return;
+    }
+    const formattedUser = {
+      id: user.id,
+      email: user.email,
+      full_name: `${user.first_name} ${user.middle_name ?? ""} ${
+        user.last_name
+      }`,
+      userProfile: user.UserProfile,
+    };
+    formatApiResponse(
+      formattedUser,
+      1,
+      "User Fetched Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error.message, res?.status(400));
+  }
+};
 export {
   changeUserStatus,
   getALlUsers,
+  getUserByIdController,
   initAdminData,
   loginUserController,
   registerUserController,

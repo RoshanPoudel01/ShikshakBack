@@ -45,13 +45,13 @@ const Class = connection.define("class", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  joinedUsers: {
-    type: DataTypes.ARRAY(DataTypes.INTEGER),
-    defaultValue: [],
-  },
-  currentlyJoinedUsers: {
-    type: DataTypes.ARRAY(DataTypes.INTEGER),
-    defaultValue: [],
+  joinedUser: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: User,
+      key: "id",
+    },
   },
 });
 
@@ -60,4 +60,5 @@ Course.hasMany(Class, { foreignKey: "courseId" });
 
 Class.belongsTo(User, { foreignKey: "createdBy" });
 User.hasMany(Class, { foreignKey: "createdBy" });
+
 export default Class;

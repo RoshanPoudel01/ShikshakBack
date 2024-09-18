@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import { Sequelize } from "sequelize";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
+import Class from "../model/Class";
 import Course from "../model/Course";
 import SubCourse from "../model/SubCourse";
 import User from "../model/User";
+import UserProfile from "../model/UserProfile";
 
 const createCourseController = async (
   req: AuthenticatedRequest,
@@ -65,8 +67,20 @@ const getCoursesController = async (
               ),
               "full_name",
             ],
-          ], // Include necessary user fields
+          ],
+          include: [
+            {
+              model: UserProfile,
+              as: "userprofile",
+              attributes: ["profilePicture", "phoneNumber"], // Adjust attributes as needed
+            },
+          ],
+          // Include necessary user fields
           // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+        },
+        {
+          model: Class,
+          attributes: ["id", "title", "startTime", "endTime", "description"],
         },
       ],
     });
