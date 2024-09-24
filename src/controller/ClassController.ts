@@ -14,12 +14,21 @@ const createClassController = async (
   try {
     const user = req.user;
     const roles = req.roles;
-    //check if user is tutor
+    // check if user is tutor
     if (!roles?.includes("Tutor")) {
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;
     }
-    const { title, description, courseId, startTime, endTime } = req.body;
+    const {
+      title,
+      description,
+      courseId,
+      startTime,
+      endTime,
+      startDate,
+      endDate,
+      price,
+    } = req.body;
     // validate inputs
     if (!title) {
       formatApiResponse(null, 0, "Title is required", res?.status(400));
@@ -40,22 +49,72 @@ const createClassController = async (
       formatApiResponse(null, 0, "Course not found", res?.status(404));
       return;
     }
+
+    // Check for class collisions
     const classExists = await Class.findOne({
       where: {
-        startTime: {
-          [Op.between]: [startTime, endTime],
-        },
+        [Op.and]: [
+          {
+            [Op.or]: [
+              {
+                startDate: {
+                  [Op.between]: [startDate, endDate],
+                },
+              },
+              {
+                endDate: {
+                  [Op.between]: [startDate, endDate],
+                },
+              },
+            ],
+          },
+          {
+            [Op.or]: [
+              {
+                startTime: {
+                  [Op.between]: [startTime, endTime],
+                },
+              },
+              {
+                endTime: {
+                  [Op.between]: [startTime, endTime],
+                },
+              },
+            ],
+          },
+        ],
+        createdBy: user.id,
       },
     });
+
     if (classExists) {
       formatApiResponse(
         null,
         0,
-        "You already have a class scheduled at this time",
+        "You already have a class scheduled that overlaps with this time slot",
         res?.status(400)
       );
       return;
     }
+
+    // Check for maximum classes per day
+    const classesOnDay = await Class.count({
+      where: {
+        startDate: startDate,
+        createdBy: user.id,
+      },
+    });
+
+    if (classesOnDay >= 4) {
+      formatApiResponse(
+        null,
+        0,
+        "You have already created the maximum number of classes (4) for this day",
+        res?.status(400)
+      );
+      return;
+    }
+
     const newClass = {
       title,
       description,
@@ -63,6 +122,9 @@ const createClassController = async (
       startTime,
       endTime,
       createdBy: user.id,
+      startDate,
+      endDate,
+      price,
     };
     // create class
     const classData = await Class.create(newClass);
@@ -116,6 +178,9 @@ const getAllClassesController = async (
         endTime: classData.endTime,
         course: classData.course,
         tutor: classData.user,
+        price: classData.price,
+        startDate: classData.startDate,
+        endDate: classData.endDate,
       };
       return formattedClass;
     });

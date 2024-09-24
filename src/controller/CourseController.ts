@@ -80,7 +80,20 @@ const getCoursesController = async (
         },
         {
           model: Class,
-          attributes: ["id", "title", "startTime", "endTime", "description"],
+          where: {
+            isActive: true,
+          },
+          attributes: [
+            "id",
+            "title",
+            "startTime",
+            "endTime",
+            "description",
+            "startDate",
+            "endDate",
+            "price",
+            "isActive",
+          ],
         },
       ],
     });

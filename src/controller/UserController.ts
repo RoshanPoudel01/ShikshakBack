@@ -153,6 +153,7 @@ const initAdminData = async (req: AuthenticatedRequest, res: Response) => {
         : {
             isAdmin: user.isAdmin,
           }),
+      userProfile: isProfileCreated,
     };
     formatApiResponse(
       formattedUserData,

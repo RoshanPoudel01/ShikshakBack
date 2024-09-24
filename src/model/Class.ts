@@ -33,12 +33,20 @@ const Class = connection.define("class", {
       key: "id",
     },
   },
-  startTime: {
+  startDate: {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  endTime: {
+  endDate: {
     type: DataTypes.DATE,
+    allowNull: true,
+  },
+  startTime: {
+    type: DataTypes.TIME,
+    allowNull: true,
+  },
+  endTime: {
+    type: DataTypes.TIME,
     allowNull: true,
   },
   isActive: {
@@ -52,6 +60,15 @@ const Class = connection.define("class", {
       model: User,
       key: "id",
     },
+  },
+  classLink: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  price: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
   },
 });
 
