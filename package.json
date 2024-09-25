@@ -2,7 +2,7 @@
   "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "yarn nodemon",
+    "start": "node server.js",
     "dev": "ts-node ./src/server.ts"
   },
   "devDependencies": {
