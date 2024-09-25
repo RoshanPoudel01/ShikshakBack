@@ -182,6 +182,7 @@ const getALlUsers = async (req: AuthenticatedRequest, res: Response) => {
       include: [
         {
           model: UserProfile,
+          as: "userprofile",
           attributes: [
             "address",
             "phoneNumber",
@@ -254,6 +255,16 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
         );
         return;
       }
+      const phoneNumberPattern = /^\d{10}$/;
+      if (!phoneNumberPattern.test(phoneNumber)) {
+        formatApiResponse(
+          null,
+          0,
+          "Phone number must be a number and exactly 10 digits",
+          res?.status(400)
+        );
+        return;
+      }
       const userProfile = await UserProfile.create({
         address,
         phoneNumber,
@@ -289,7 +300,8 @@ const getUserByIdController = async (
   try {
     const roles = req.roles;
     const isTutor = roles.includes("Tutor");
-    if (!isTutor) {
+    const isAdmin = roles.includes("Admin");
+    if (!isTutor && !isAdmin) {
       formatApiResponse(null, 0, "Unauthorized", res?.status(401));
       return;
     }
@@ -298,6 +310,7 @@ const getUserByIdController = async (
       include: [
         {
           model: UserProfile,
+          as: "userprofile",
           attributes: [
             "address",
             "phoneNumber",
@@ -318,7 +331,8 @@ const getUserByIdController = async (
       full_name: `${user.first_name} ${user.middle_name ?? ""} ${
         user.last_name
       }`,
-      userProfile: user.UserProfile,
+      isTutor: !user.isAdmin && !user.isUser,
+      userProfile: user.userprofile,
     };
     formatApiResponse(
       formattedUser,

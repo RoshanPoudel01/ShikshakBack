@@ -28,6 +28,7 @@ const createClassController = async (
       startDate,
       endDate,
       price,
+      classLink,
     } = req.body;
     // validate inputs
     if (!title) {
@@ -125,6 +126,7 @@ const createClassController = async (
       startDate,
       endDate,
       price,
+      classLink,
     };
     // create class
     const classData = await Class.create(newClass);
@@ -271,7 +273,17 @@ const updateClassController = async (
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;
     }
-    const { title, description, courseId, startTime, endTime } = req.body;
+    const {
+      title,
+      description,
+      courseId,
+      startTime,
+      endTime,
+      startDate,
+      endDate,
+      price,
+      classLink,
+    } = req.body;
     // validate inputs
     if (!title) {
       formatApiResponse(null, 0, "Title is required", res?.status(400));
@@ -292,12 +304,65 @@ const updateClassController = async (
       formatApiResponse(null, 0, "Course not found", res?.status(404));
       return;
     }
+    const existingClass = await Class.findOne({
+      where: { id, createdBy: user.id },
+    });
+
+    if (!existingClass) {
+      formatApiResponse(
+        null,
+        0,
+        "Class not found or you don't have permission to edit it",
+        res?.status(404)
+      );
+      return;
+    }
+
+    // Check for class collisions
+    const classExists = await Class.findOne({
+      where: {
+        [Op.and]: [
+          { id: { [Op.ne]: id } }, // Exclude the current class being edited
+          { createdBy: user.id },
+          {
+            [Op.or]: [
+              {
+                startDate: { [Op.lte]: endDate },
+                endDate: { [Op.gte]: startDate },
+              },
+            ],
+          },
+          {
+            [Op.or]: [
+              {
+                startTime: { [Op.lt]: endTime },
+                endTime: { [Op.gt]: startTime },
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    if (classExists) {
+      formatApiResponse(
+        null,
+        0,
+        "The updated schedule overlaps with another class",
+        res?.status(400)
+      );
+      return;
+    }
     await classData.update({
       title,
       description,
       courseId,
       startTime,
       endTime,
+      startDate,
+      endDate,
+      price,
+      classLink,
     });
     formatApiResponse(
       classData,
