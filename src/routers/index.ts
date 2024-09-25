@@ -1,6 +1,7 @@
 import express from "express";
 import { roleController } from "../controller";
 import {
+  classJoinedByUser,
   createClassController,
   deleteClassController,
   getAllClassesController,
@@ -50,6 +51,7 @@ router.get("/initAdmin", checkAuth, initAdminData);
 router.get("/allUsers", checkAuth, getALlUsers);
 router.get("/toggleUserStatus/id=:id", checkAuth, changeUserStatus);
 router.get("/getUserById/id=:id", checkAuth, getUserByIdController);
+
 //course
 router.post(
   "/createCourse",
@@ -95,6 +97,7 @@ router.get("/toggleClassStatus/id=:id", checkAuth, toggleClassStatusController);
 router.delete("/deleteClass/id=:id", checkAuth, deleteClassController);
 router.post("/editClass/id=:id", checkAuth, updateClassController);
 router.get("/joinClass/id=:id", checkAuth, joinClassController);
+router.get("/getMyClass", checkAuth, classJoinedByUser);
 
 // UserProfile Routes
 router.post(
@@ -106,4 +109,5 @@ router.post(
   ]),
   saveUserProfile
 );
+
 export default router;

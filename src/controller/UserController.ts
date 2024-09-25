@@ -237,16 +237,27 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     const user = req.user;
     const roles = req.roles;
     const isTutor = roles.includes("Tutor");
-    const { address, phoneNumber, dateOfBirth } = req.body;
+    const {
+      address,
+      phoneNumber,
+      dateOfBirth,
+      first_name,
+      middle_name,
+      last_name,
+    } = req.body;
     const profilePicture =
       req.files &&
       req.files["profilePicture"] &&
       req.files["profilePicture"][0].path;
 
-    if (profilePicture) {
+    let userProfile: any = await UserProfile.findOne({
+      where: { userId: user.id },
+    });
+    if (profilePicture || userProfile) {
       const document =
         req.files && req.files["document"] && req.files["document"][0].path;
-      if (isTutor && !document) {
+
+      if (isTutor && !document && !userProfile) {
         formatApiResponse(
           null,
           0,
@@ -255,6 +266,7 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
         );
         return;
       }
+
       const phoneNumberPattern = /^\d{10}$/;
       if (!phoneNumberPattern.test(phoneNumber)) {
         formatApiResponse(
@@ -265,20 +277,51 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
         );
         return;
       }
-      const userProfile = await UserProfile.create({
-        address,
-        phoneNumber,
-        profilePicture,
-        document,
-        dateOfBirth,
-        userId: user.id,
-      });
-      formatApiResponse(
-        userProfile,
-        1,
-        "User Profile Created Successfully",
-        res?.status(201)
+
+      // Update the user's name fields in the User table
+      await User.update(
+        {
+          first_name,
+          middle_name,
+          last_name,
+        },
+        { where: { id: user.id } }
       );
+
+      // Check if user profile already exists
+
+      if (userProfile) {
+        // Update the existing profile
+        userProfile = await userProfile.update({
+          address,
+          phoneNumber,
+          profilePicture,
+          document: isTutor ? document : userProfile.document, // Only update document if Tutor
+          dateOfBirth,
+        });
+        formatApiResponse(
+          userProfile,
+          1,
+          "User Profile Updated Successfully",
+          res?.status(200)
+        );
+      } else {
+        // Create a new profile if none exists
+        userProfile = await UserProfile.create({
+          address,
+          phoneNumber,
+          profilePicture,
+          document,
+          dateOfBirth,
+          userId: user.id,
+        });
+        formatApiResponse(
+          userProfile,
+          1,
+          "User Profile Created Successfully",
+          res?.status(201)
+        );
+      }
     } else {
       formatApiResponse(
         null,

@@ -231,6 +231,7 @@ const deletCourseController = async (req: Request, res: Response) => {
     formatApiResponse(null, 0, error?.message, res?.status(400));
   }
 };
+
 export {
   createCourseController,
   deletCourseController,

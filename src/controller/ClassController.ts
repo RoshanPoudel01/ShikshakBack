@@ -489,7 +489,35 @@ const joinClassController = async (
     formatApiResponse(null, 0, error?.message, res?.status(400));
   }
 };
+
+const classJoinedByUser = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const user = req.user;
+    const classes = await Class.findAll({
+      where: {
+        joinedUser: user.id,
+      },
+      include: [
+        {
+          model: Course,
+          as: "course",
+          attributes: ["id", "title"],
+        },
+      ],
+      order: [["startTime", "ASC"]],
+    });
+    formatApiResponse(
+      classes,
+      1,
+      "Classes Fetched Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
 export {
+  classJoinedByUser,
   createClassController,
   deleteClassController,
   getAllClassesController,
