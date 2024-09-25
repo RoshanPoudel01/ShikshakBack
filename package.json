@@ -2,7 +2,7 @@
   "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node server.js",
+    "start": "node server.ts",
     "dev": "ts-node ./src/server.ts"
   },
   "devDependencies": {
