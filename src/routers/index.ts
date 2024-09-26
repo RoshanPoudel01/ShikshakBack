@@ -119,6 +119,5 @@ router.post(
   saveUserProfile
 );
 
-// Route handler to get recommendations
 router.get("/recommendations", checkAuth, recommendFunction);
 export default router;

@@ -73,6 +73,8 @@ function cosineSimilarity(vec1, vec2) {
   return magnitude1 && magnitude2 ? dotProduct / (magnitude1 * magnitude2) : 0;
 }
 
+// ... [previous helper functions remain unchanged]
+
 // Fetch user's enrolled classes
 async function getUserEnrolledClasses(userId) {
   const classes: any = await Class.findAll({
@@ -105,17 +107,24 @@ async function getAllCoursesWithClasses() {
 export async function recommendCourses(userId) {
   const enrolledClasses = await getUserEnrolledClasses(userId);
   const allCourses = await getAllCoursesWithClasses();
+  console.log(enrolledClasses);
 
   if (!enrolledClasses.length) return []; // If user has no enrolled classes, return empty
 
-  // Preprocess and prepare documents (enrolled classes and courses)
-  const enrolledDocuments = enrolledClasses.map((cls) =>
-    preprocess(
-      `${cls.title} ${cls.description} ${cls.courseId} ${cls.joinedUser}`
-    )
+  // Get the list of course IDs the user is already enrolled in
+  const enrolledCourseIds = new Set(enrolledClasses.map((cls) => cls.courseId));
+
+  // Filter out courses the user is already enrolled in
+  const availableCourses = allCourses.filter(
+    (course) => !enrolledCourseIds.has(course.courseId)
   );
-  const courseDocuments = allCourses.map((course) =>
-    preprocess(`${course.title} ${course.classes}`)
+
+  // Preprocess and prepare documents (enrolled classes and available courses)
+  const enrolledDocuments = enrolledClasses.map((cls) =>
+    preprocess(`${cls.title} ${cls.description}`)
+  );
+  const courseDocuments = availableCourses.map((course) =>
+    preprocess(`${course.title} ${course.description} ${course.classes}`)
   );
 
   const allDocuments = [...enrolledDocuments, ...courseDocuments];
@@ -123,7 +132,7 @@ export async function recommendCourses(userId) {
   // Calculate IDF for all documents
   const idf = calculateIDF(allDocuments);
 
-  // Generate TF-IDF vectors for user's enrolled classes and courses
+  // Generate TF-IDF vectors for user's enrolled classes and available courses
   const userTFIDFVectors = enrolledDocuments.map((doc) => {
     const tf = calculateTF(doc);
     return calculateTFIDF(tf, idf);
@@ -134,8 +143,8 @@ export async function recommendCourses(userId) {
     return calculateTFIDF(tf, idf);
   });
 
-  // Compare each course with user's enrolled classes using cosine similarity
-  const recommendations = allCourses.map((course, index) => {
+  // Compare each available course with all of user's enrolled classes using cosine similarity
+  const recommendations = availableCourses.map((course, index) => {
     let maxSimilarity = 0;
     const courseVector = createVector(
       Object.keys(idf),
@@ -159,7 +168,7 @@ export async function recommendCourses(userId) {
 
   // Sort by similarity in descending order and return recommendations
   return recommendations
-    .filter((rec) => rec.similarity > 0.5) // Filter for meaningful recommendations
+    .filter((rec) => rec.similarity > 0) // Filter for meaningful recommendations
     .sort((a, b) => b.similarity - a.similarity);
 }
 
