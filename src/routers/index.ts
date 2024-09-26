@@ -26,6 +26,7 @@ import {
 //   getSubCourseByIdController,
 //   getSubCoursesController,
 // } from "../controller/SubCourseController";
+import { verifyKhalti } from "../controller/PaymentController";
 import {
   changeUserStatus,
   getALlUsers,
@@ -106,4 +107,7 @@ router.post(
   ]),
   saveUserProfile
 );
+
+router.get("/payment/khalti/verify", verifyKhalti);
+
 export default router;

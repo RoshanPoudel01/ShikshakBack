@@ -6,8 +6,8 @@ import { Sequelize } from "sequelize";
 
 const connection = new Sequelize({
   database: "ShikshakDB",
-  username: "sosuke",
-  password: "sosuke",
+  username: "aadarsh",
+  password: "aadarsh",
   dialect: "postgres",
   host: "localhost",
   port: 5432,

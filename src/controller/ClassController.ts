@@ -5,6 +5,7 @@ import Class from "../model/Class";
 import Course from "../model/Course";
 import User from "../model/User";
 import UserProfile from "../model/UserProfile";
+import { initiateKhalti } from "./PaymentController";
 const { Op } = require("sequelize");
 // Create Class
 const createClassController = async (
@@ -460,31 +461,20 @@ const joinClassController = async (
       formatApiResponse(null, 0, "Class not found", res?.status(404));
       return;
     }
-    const enrolledUser = await Class.findOne({
-      where: {
-        joinedUser: user.id,
-        id: id,
-      },
-    });
-    console.log(enrolledUser);
-    if (enrolledUser) {
-      formatApiResponse(
-        null,
-        0,
-        "You have already joined this class",
-        res?.status(400)
-      );
-      return;
-    }
-    await classData.update({
-      joinedUser: user.id,
-    });
-    formatApiResponse(
-      null,
-      1,
-      "You have joined the class successfully",
-      res?.status(200)
-    );
+
+    const data = await classData.toJSON();
+
+    const formData = {
+      return_url: "http://localhost:3300/api/payment/khalti/verify",
+      website_url: "http://localhost:3300",
+      amount: data.price,
+      purchase_order_id: id,
+      purchase_order_name: "test",
+    };
+
+    console.log({ formData });
+
+    await initiateKhalti(formData, req, res);
   } catch (error) {
     formatApiResponse(null, 0, error?.message, res?.status(400));
   }
