@@ -18,6 +18,8 @@ import {
   getCourseByIdController,
   getCourseByUserController,
   getCoursesController,
+  getTopCoursesController,
+  updateCourseClicks,
 } from "../controller/CourseController";
 // import {
 //   createSubCourseController,
@@ -27,6 +29,7 @@ import {
 //   getSubCourseByIdController,
 //   getSubCoursesController,
 // } from "../controller/SubCourseController";
+import { recommendFunction } from "../controller/Recommendation";
 import {
   changeUserStatus,
   getALlUsers,
@@ -36,7 +39,11 @@ import {
   registerUserController,
   saveUserProfile,
 } from "../controller/UserController";
-import { checkAuth, checkDuplicateEmail } from "../middleware/verifyUser";
+import {
+  activeUser,
+  checkAuth,
+  checkDuplicateEmail,
+} from "../middleware/verifyUser";
 import { upload } from "../utils/multer";
 
 const router = express.Router();
@@ -56,6 +63,7 @@ router.get("/getUserById/id=:id", checkAuth, getUserByIdController);
 router.post(
   "/createCourse",
   checkAuth,
+  activeUser,
   upload.single("imageUrl"),
   createCourseController
 );
@@ -69,7 +77,8 @@ router.post(
   editCourseController
 );
 router.get("/getMyCourses", checkAuth, getCourseByUserController);
-
+router.get("/topCourses", getTopCoursesController);
+router.get("/updateCourseClicks/id=:id", updateCourseClicks);
 //subcourse
 // router.get("/getAllSubCourses", getAllSubCoursesController);
 // router.post(
@@ -110,4 +119,6 @@ router.post(
   saveUserProfile
 );
 
+// Route handler to get recommendations
+router.get("/recommendations", checkAuth, recommendFunction);
 export default router;

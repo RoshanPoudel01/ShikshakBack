@@ -48,4 +48,21 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next) => {
     formatApiResponse(null, 0, error?.message, res?.status(400));
   }
 };
-export { checkAuth, checkDuplicateEmail };
+
+const activeUser = async (req: AuthenticatedRequest, res: Response, next) => {
+  try {
+    if (!req.user.isActive) {
+      formatApiResponse(
+        null,
+        0,
+        "User is not active. If you have updated your profile please wait for approval.",
+        res?.status(403)
+      );
+      return;
+    }
+    next();
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
+export { activeUser, checkAuth, checkDuplicateEmail };

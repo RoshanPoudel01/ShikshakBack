@@ -91,15 +91,15 @@ const loginUserController = async (req: Request, res: Response) => {
       );
       return;
     }
-    if (!user.isActive) {
-      formatApiResponse(
-        null,
-        0,
-        "Cannot login with this user. Please contact admin.",
-        res?.status(404)
-      );
-      return;
-    }
+    // if (!user.isActive) {
+    //   formatApiResponse(
+    //     null,
+    //     0,
+    //     "Cannot login with this user. Please contact admin.",
+    //     res?.status(404)
+    //   );
+    //   return;
+    // }
     const userRoles = await user.getRoles();
 
     const userRole = userRoles?.map((role) => role.name);

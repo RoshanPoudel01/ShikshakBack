@@ -4,7 +4,6 @@ import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Class from "../model/Class";
 import Course from "../model/Course";
-import SubCourse from "../model/SubCourse";
 import User from "../model/User";
 import UserProfile from "../model/UserProfile";
 
@@ -211,16 +210,16 @@ const deletCourseController = async (req: Request, res: Response) => {
       formatApiResponse(null, 0, "Course not found", res?.status(404));
       return;
     }
-    const subCourse = await SubCourse.findOne({
+    const classes = await Class.findOne({
       where: {
         courseId: id,
       },
     });
-    if (subCourse) {
+    if (classes) {
       formatApiResponse(
         null,
         0,
-        "Cannot delete course with subcourses",
+        "Cannot delete course with class",
         res?.status(400)
       );
       return;
@@ -232,6 +231,83 @@ const deletCourseController = async (req: Request, res: Response) => {
   }
 };
 
+const getTopCoursesController = async (req: Request, res: Response) => {
+  try {
+    const courses = await Course.findAll({
+      order: [["clicks", "DESC"]],
+      limit: 5,
+      include: [
+        {
+          model: User,
+          attributes: [
+            [
+              Sequelize.fn(
+                "CONCAT",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("middle_name"),
+                " ",
+                Sequelize.col("last_name")
+              ),
+              "full_name",
+            ],
+          ],
+          include: [
+            {
+              model: UserProfile,
+              as: "userprofile",
+              attributes: ["profilePicture", "phoneNumber"], // Adjust attributes as needed
+            },
+          ],
+          // Include necessary user fields
+          // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+        },
+        {
+          model: Class,
+          where: {
+            isActive: true,
+          },
+          attributes: [
+            "id",
+            "title",
+            "startTime",
+            "endTime",
+            "description",
+            "startDate",
+            "endDate",
+            "price",
+            "isActive",
+          ],
+        },
+      ],
+    });
+    formatApiResponse(
+      courses,
+      1,
+      "Top Courses Fetched Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
+
+const updateCourseClicks = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const course: any = await Course.findByPk(id);
+    const clicks = course.clicks + 1;
+    await course.update({ clicks });
+    formatApiResponse(
+      null,
+      1,
+      "Course Clicks Updated Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
 export {
   createCourseController,
   deletCourseController,
@@ -239,4 +315,6 @@ export {
   getCourseByIdController,
   getCourseByUserController,
   getCoursesController,
+  getTopCoursesController,
+  updateCourseClicks,
 };
