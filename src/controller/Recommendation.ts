@@ -99,6 +99,9 @@ async function getAllCoursesWithClasses() {
     courseId: course.id,
     title: course.title,
     description: course.description,
+    imageUrl: course.imageUrl,
+    userProfile: course.userProfile,
+    availableClasses: course.classes.map((c) => c),
     classes: course.classes.map((c) => `${c.title} ${c.description}`).join(" "),
   }));
 }
@@ -107,7 +110,6 @@ async function getAllCoursesWithClasses() {
 export async function recommendCourses(userId) {
   const enrolledClasses = await getUserEnrolledClasses(userId);
   const allCourses = await getAllCoursesWithClasses();
-  console.log(enrolledClasses);
 
   if (!enrolledClasses.length) return []; // If user has no enrolled classes, return empty
 
@@ -162,6 +164,9 @@ export async function recommendCourses(userId) {
     return {
       courseId: course.courseId,
       title: course.title,
+      classes: course.availableClasses,
+      imageUrl: course.imageUrl,
+      userProfile: course.userProfile,
       similarity: maxSimilarity,
     };
   });

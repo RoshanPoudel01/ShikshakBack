@@ -40,6 +40,10 @@ const UserProfile = connection.define("userprofile", {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  educationQualification: {
+    type: DataTypes.ENUM("BACHELORS", "MASTERS", "BACHELORS_RUNNING"),
+    allowNull: true,
+  },
 });
 
 UserProfile.belongsTo(User, { foreignKey: "userId" });

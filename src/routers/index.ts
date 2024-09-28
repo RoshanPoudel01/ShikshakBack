@@ -29,8 +29,10 @@ import {
 //   getSubCourseByIdController,
 //   getSubCoursesController,
 // } from "../controller/SubCourseController";
+import dashboardApi from "../controller/DashboardController";
 import { recommendFunction } from "../controller/Recommendation";
 import {
+  changePassword,
   changeUserStatus,
   getALlUsers,
   getUserByIdController,
@@ -58,6 +60,7 @@ router.get("/initAdmin", checkAuth, initAdminData);
 router.get("/allUsers", checkAuth, getALlUsers);
 router.get("/toggleUserStatus/id=:id", checkAuth, changeUserStatus);
 router.get("/getUserById/id=:id", checkAuth, getUserByIdController);
+router.post("/changePassword", checkAuth, changePassword);
 
 //course
 router.post(
@@ -120,4 +123,6 @@ router.post(
 );
 
 router.get("/recommendations", checkAuth, recommendFunction);
+
+router.get("/dashboard", checkAuth, dashboardApi);
 export default router;

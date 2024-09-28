@@ -91,15 +91,15 @@ const loginUserController = async (req: Request, res: Response) => {
       );
       return;
     }
-    // if (!user.isActive) {
-    //   formatApiResponse(
-    //     null,
-    //     0,
-    //     "Cannot login with this user. Please contact admin.",
-    //     res?.status(404)
-    //   );
-    //   return;
-    // }
+    if (!user.isActive && user.isUser) {
+      formatApiResponse(
+        null,
+        0,
+        "Cannot login with this user. Please contact admin.",
+        res?.status(404)
+      );
+      return;
+    }
     const userRoles = await user.getRoles();
 
     const userRole = userRoles?.map((role) => role.name);
@@ -244,7 +244,9 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
       first_name,
       middle_name,
       last_name,
+      educationQualification,
     } = req.body;
+    console.log(educationQualification);
     const profilePicture =
       req.files &&
       req.files["profilePicture"] &&
@@ -298,6 +300,9 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
           profilePicture,
           document: isTutor ? document : userProfile.document, // Only update document if Tutor
           dateOfBirth,
+          educationQualification: isTutor
+            ? educationQualification
+            : userProfile.educationQualification,
         });
         formatApiResponse(
           userProfile,
@@ -314,6 +319,7 @@ const saveUserProfile = async (req: AuthenticatedRequest, res: Response) => {
           document,
           dateOfBirth,
           userId: user.id,
+          educationQualification: isTutor ? educationQualification : null,
         });
         formatApiResponse(
           userProfile,
@@ -387,7 +393,38 @@ const getUserByIdController = async (
     formatApiResponse(null, 0, error.message, res?.status(400));
   }
 };
+
+const changePassword = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = req.user;
+    const validPassword = await bcrypt.compare(oldPassword, user.password);
+    if (!validPassword) {
+      formatApiResponse(null, 0, "Password is incorrect", res?.status(400));
+      return;
+    }
+    await User.update(
+      {
+        password: await bcrypt.hash(newPassword, 10),
+      },
+      {
+        where: {
+          id: user.id,
+        },
+      }
+    );
+    formatApiResponse(
+      null,
+      1,
+      "Password changed successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error.message, res?.status(400));
+  }
+};
 export {
+  changePassword,
   changeUserStatus,
   getALlUsers,
   getUserByIdController,

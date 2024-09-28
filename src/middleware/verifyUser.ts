@@ -32,7 +32,6 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next) => {
       formatApiResponse(null, 0, "Unauthorized", res?.status(401));
       return;
     }
-
     const authToken = req.headers.authorization.split(" ")[1];
     const userId = jwt.decode(authToken).id;
     const user = await User.findByPk(userId);
