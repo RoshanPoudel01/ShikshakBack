@@ -461,6 +461,19 @@ const joinClassController = async (
       return;
     }
 
+    const classAlredyFull = await Class.findOne({
+      where: {
+        id,
+        joinedUser: {
+          [Op.not]: null,
+        },
+      },
+    });
+    if (classAlredyFull) {
+      formatApiResponse(null, 0, "Class is already full", res?.status(400));
+      return;
+    }
+
     const enrolledUser = await Class.findOne({
       where: {
         joinedUser: user.id,
@@ -515,6 +528,9 @@ const classJoinedByUser = async (req: AuthenticatedRequest, res: Response) => {
           model: Course,
           as: "course",
           attributes: ["id", "title"],
+        },
+        {
+          model: User,
         },
       ],
       order: [["startTime", "ASC"]],

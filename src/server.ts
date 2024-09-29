@@ -13,9 +13,10 @@ const port = process.env.PORT || 3300;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use("/uploads", express.static("uploads"));
 app.use("/api", router);
+app.use(express.static("public"));
 
 User.belongsToMany(Role, { through: UserRole });
 Role.belongsToMany(User, { through: UserRole });

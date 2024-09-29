@@ -81,6 +81,7 @@ const getCoursesController = async (
           model: Class,
           where: {
             isActive: true,
+            joinedUser: null,
           },
           attributes: [
             "id",

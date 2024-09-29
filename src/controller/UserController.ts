@@ -36,6 +36,7 @@ const registerUserController = async (req: Request, res: Response) => {
         last_name,
         isUser,
         isAdmin,
+        isActive: isUser ? true : false,
       },
       { transaction }
     );

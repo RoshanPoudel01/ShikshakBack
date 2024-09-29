@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import connection from "../database";
 import Class from "./Class";
+import User from "./User";
 
 const Payment = connection.define("payment", {
   id: {
@@ -17,7 +18,7 @@ const Payment = connection.define("payment", {
     allowNull: false,
   },
   classId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: Class,
@@ -32,5 +33,17 @@ const Payment = connection.define("payment", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: User,
+      key: "id",
+    },
+  },
 });
+Payment.belongsTo(Class, { foreignKey: "classId" });
+Payment.belongsTo(User, { foreignKey: "userId" });
+Class.hasOne(Payment, { foreignKey: "classId" });
+User.hasMany(Payment, { foreignKey: "userId" });
 export default Payment;

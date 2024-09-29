@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Response } from "express";
 import { roleController } from "../controller";
 import {
   classJoinedByUser,
@@ -30,6 +30,11 @@ import {
 //   getSubCoursesController,
 // } from "../controller/SubCourseController";
 import dashboardApi from "../controller/DashboardController";
+import {
+  getAllPayments,
+  initiateStripe,
+  paymentSuccess,
+} from "../controller/PaymentController";
 import { recommendFunction } from "../controller/Recommendation";
 import {
   changePassword,
@@ -47,6 +52,7 @@ import {
   checkDuplicateEmail,
 } from "../middleware/verifyUser";
 import { upload } from "../utils/multer";
+const bodyParser = require("body-parser");
 
 const router = express.Router();
 
@@ -125,4 +131,13 @@ router.post(
 router.get("/recommendations", checkAuth, recommendFunction);
 
 router.get("/dashboard", checkAuth, dashboardApi);
+
+router.post("/create-checkout-session", checkAuth, initiateStripe);
+
+router.get("/success", paymentSuccess);
+router.get("/cancel", (req, res: Response) => {
+  res.redirect("http://localhost:9001/fail");
+});
+
+router.get("/allPayments", checkAuth, getAllPayments);
 export default router;

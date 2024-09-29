@@ -4,23 +4,23 @@ import { Sequelize } from "sequelize";
 // const username = process.env.DB_USER;
 // const password = process.env.DB_PASS;
 
-// const connection = new Sequelize({
-//   database: "ShikshakDB",
-//   username: "sosuke",
-//   password: "sosuke",
-//   dialect: "postgres",
-//   host: "localhost",
-//   port: 5432,
-// });
-
 const connection = new Sequelize({
-  database: "postgres",
-  username: "postgres.yvavpzqcmysgjrekfoiz",
-  password: "ykOtRoBLo0s2Voge",
+  database: "Shikshak",
+  username: "sosuke",
+  password: "sosuke",
   dialect: "postgres",
-  host: "aws-0-ap-southeast-1.pooler.supabase.com",
-  port: 6543,
+  host: "localhost",
+  port: 5432,
 });
+
+// const connection = new Sequelize({
+//   database: "postgres",
+//   username: "postgres.yvavpzqcmysgjrekfoiz",
+//   password: "ykOtRoBLo0s2Voge",
+//   dialect: "postgres",
+//   host: "aws-0-ap-southeast-1.pooler.supabase.com",
+//   port: 6543,
+// });
 
 try {
   connection.authenticate();
