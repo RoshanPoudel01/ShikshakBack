@@ -25,6 +25,15 @@ const registerUserController = async (req: Request, res: Response) => {
         email,
       },
     });
+    if (userExists) {
+      formatApiResponse(
+        null,
+        0,
+        "User with the email already exists",
+        res?.status(400)
+      );
+      return;
+    }
 
     // Create the user within the transaction
     const user = await User.create(

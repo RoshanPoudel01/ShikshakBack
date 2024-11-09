@@ -435,6 +435,15 @@ const deleteClassController = async (
       formatApiResponse(null, 0, "UnAuthorized", res?.status(401));
       return;
     }
+    if (classData?.joinedUser) {
+      formatApiResponse(
+        null,
+        0,
+        "Class cannot be deleted as students have already joined",
+        res?.status(400)
+      );
+      return;
+    }
     await classData.destroy();
     formatApiResponse(null, 1, "Class deleted successfully", res?.status(200));
   } catch (error) {

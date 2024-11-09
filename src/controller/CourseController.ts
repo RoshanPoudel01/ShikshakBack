@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Sequelize } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { formatApiResponse } from "../middleware/responseFormatter";
 import { AuthenticatedRequest } from "../middleware/verifyUser";
 import Class from "../model/Class";
@@ -44,65 +44,125 @@ const createCourseController = async (
 };
 
 //get all courses
-const getCoursesController = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+const getCoursesController = async (req: Request, res: Response) => {
   try {
-    const courses = await Course.findAll({
-      order: [["title", "ASC"]],
-      include: [
-        {
-          model: User,
-          attributes: [
-            [
-              Sequelize.fn(
-                "CONCAT",
-                Sequelize.col("first_name"),
-                " ",
-                Sequelize.col("middle_name"),
-                " ",
-                Sequelize.col("last_name")
-              ),
-              "full_name",
-            ],
-          ],
-          include: [
-            {
-              model: UserProfile,
-              as: "userprofile",
-              attributes: ["profilePicture", "phoneNumber"], // Adjust attributes as needed
-            },
-          ],
-          // Include necessary user fields
-          // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
-        },
-        {
-          model: Class,
-          where: {
-            isActive: true,
-            joinedUser: null,
+    const { title } = req.query;
+    if (title) {
+      const courses = await Course.findAll({
+        where: {
+          title: {
+            [Op.like]: `%${title}%`,
           },
-          attributes: [
-            "id",
-            "title",
-            "startTime",
-            "endTime",
-            "description",
-            "startDate",
-            "endDate",
-            "price",
-            "isActive",
-          ],
         },
-      ],
-    });
-    formatApiResponse(
-      courses,
-      1,
-      "Courses Fetched Successfully",
-      res?.status(200)
-    );
+        order: [["title", "ASC"]],
+        include: [
+          {
+            model: User,
+            attributes: [
+              [
+                Sequelize.fn(
+                  "CONCAT",
+                  Sequelize.col("first_name"),
+                  " ",
+                  Sequelize.col("middle_name"),
+                  " ",
+                  Sequelize.col("last_name")
+                ),
+                "full_name",
+              ],
+            ],
+            include: [
+              {
+                model: UserProfile,
+                as: "userprofile",
+                attributes: ["profilePicture", "phoneNumber"], // Adjust attributes as needed
+              },
+            ],
+            // Include necessary user fields
+            // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+          },
+          {
+            model: Class,
+            where: {
+              isActive: true,
+              joinedUser: null,
+            },
+            attributes: [
+              "id",
+              "title",
+              "startTime",
+              "endTime",
+              "description",
+              "startDate",
+              "endDate",
+              "price",
+              "isActive",
+            ],
+          },
+        ],
+      });
+      formatApiResponse(
+        courses,
+        1,
+        "Courses Fetched Successfully",
+        res?.status(200)
+      );
+    } else {
+      const courses = await Course.findAll({
+        order: [["title", "ASC"]],
+        include: [
+          {
+            model: User,
+            attributes: [
+              [
+                Sequelize.fn(
+                  "CONCAT",
+                  Sequelize.col("first_name"),
+                  " ",
+                  Sequelize.col("middle_name"),
+                  " ",
+                  Sequelize.col("last_name")
+                ),
+                "full_name",
+              ],
+            ],
+            include: [
+              {
+                model: UserProfile,
+                as: "userprofile",
+                attributes: ["profilePicture", "phoneNumber"], // Adjust attributes as needed
+              },
+            ],
+            // Include necessary user fields
+            // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+          },
+          {
+            model: Class,
+            where: {
+              isActive: true,
+              joinedUser: null,
+            },
+            attributes: [
+              "id",
+              "title",
+              "startTime",
+              "endTime",
+              "description",
+              "startDate",
+              "endDate",
+              "price",
+              "isActive",
+            ],
+          },
+        ],
+      });
+      formatApiResponse(
+        courses,
+        1,
+        "Courses Fetched Successfully",
+        res?.status(200)
+      );
+    }
   } catch (error) {
     formatApiResponse(null, 0, error?.message, res?.status(400));
   }
@@ -309,6 +369,63 @@ const updateCourseClicks = async (req: Request, res: Response) => {
     formatApiResponse(null, 0, error?.message, res?.status(400));
   }
 };
+const searchCoursesController = async (req: Request, res: Response) => {
+  try {
+    const { title } = req.query;
+    const courses = await Course.findAll({
+      where: {
+        title: {
+          [Op.like]: `%${title}%`,
+        },
+      },
+      order: [["title", "ASC"]],
+      include: [
+        {
+          model: User,
+          attributes: [
+            [
+              Sequelize.fn(
+                "CONCAT",
+                Sequelize.col("first_name"),
+                " ",
+                Sequelize.col("middle_name"),
+                " ",
+                Sequelize.col("last_name")
+              ),
+              "full_name",
+            ],
+          ], // Include necessary user fields
+          // attributes: ["id", "first_name", "last_name", "middle_name", "email"], // Include necessary user fields
+        },
+        {
+          model: Class,
+          where: {
+            isActive: true,
+          },
+          attributes: [
+            "id",
+            "title",
+            "startTime",
+            "endTime",
+            "description",
+            "startDate",
+            "endDate",
+            "price",
+            "isActive",
+          ],
+        },
+      ],
+    });
+    formatApiResponse(
+      courses,
+      1,
+      "Courses Fetched Successfully",
+      res?.status(200)
+    );
+  } catch (error) {
+    formatApiResponse(null, 0, error?.message, res?.status(400));
+  }
+};
 export {
   createCourseController,
   deletCourseController,
@@ -317,5 +434,6 @@ export {
   getCourseByUserController,
   getCoursesController,
   getTopCoursesController,
+  searchCoursesController,
   updateCourseClicks,
 };

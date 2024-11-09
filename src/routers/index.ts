@@ -19,6 +19,7 @@ import {
   getCourseByUserController,
   getCoursesController,
   getTopCoursesController,
+  searchCoursesController,
   updateCourseClicks,
 } from "../controller/CourseController";
 // import {
@@ -78,16 +79,23 @@ router.post(
 );
 router.get("/getCourses", getCoursesController);
 router.get("/getCourse/id=:id", getCourseByIdController);
-router.delete("/deleteCourse/id=:id", checkAuth, deletCourseController);
+router.delete(
+  "/deleteCourse/id=:id",
+  checkAuth,
+  activeUser,
+  deletCourseController
+);
 router.post(
   "/editCourse/id=:id",
   upload.single("imageUrl"),
   checkAuth,
+  activeUser,
   editCourseController
 );
 router.get("/getMyCourses", checkAuth, getCourseByUserController);
 router.get("/topCourses", getTopCoursesController);
 router.get("/updateCourseClicks/id=:id", updateCourseClicks);
+router.get("/searchCourses", searchCoursesController);
 //subcourse
 // router.get("/getAllSubCourses", getAllSubCoursesController);
 // router.post(
@@ -107,7 +115,7 @@ router.get("/updateCourseClicks/id=:id", updateCourseClicks);
 // router.delete("/deleteSubCourse/id=:id", checkAuth, deleteSubCourseController);
 
 //class Routes
-router.post("/createClass", checkAuth, createClassController);
+router.post("/createClass", checkAuth, activeUser, createClassController);
 router.get("/getClasses", checkAuth, getAllClassesController);
 router.get("/getMyClasses", checkAuth, getClassesByUser);
 router.get("/getClass/id=:id", checkAuth, getClassByIdController);
